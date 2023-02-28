@@ -8,6 +8,7 @@ import {
    useMatch
 } from 'react-router-dom'
 
+import { useField } from './hooks'
 import './styles/App.css'
 
 const Menu = () => {
@@ -23,7 +24,7 @@ const Menu = () => {
 const Anecdote = ({ anecdote }) => {
 
    return (
-      <div key={anecdote.id}>
+      <div key={anecdote.id} className='paddingB'>
          <h2>{anecdote.content}</h2>
          <h4>by {anecdote.author}</h4>
          <div className='paddingT'>For more info see: <a href={anecdote.info} target='_blank' rel='noreferrer'>{anecdote.info}</a></div>
@@ -70,40 +71,50 @@ const Footer = () => {
 }
 
 const CreateNew = (props) => {
-   const [content, setContent] = useState('')
-   const [author, setAuthor] = useState('')
-   const [info, setInfo] = useState('')
+   const content = useField('content')
+   const author = useField('author')
+   const info = useField('info')
+   const reset = useField('reset')
 
    const navigate = useNavigate()
 
    const handleSubmit = (e) => {
       e.preventDefault()
       props.addNew({
-         content,
-         author,
-         info,
+         content: content.value,
+         author: author.value,
+         info: info.value,
          votes: 0
       })
       navigate('/')
    }
 
+   const handleReset = (e) => {
+      e.preventDefault()
+
+      content.reset()
+      author.reset()
+      info.reset()
+   }
+
    return (
       <div>
          <h2>Create a new anecdote</h2>
-         <form onSubmit={handleSubmit}>
+         <form onSubmit={handleSubmit} className='paddingB'>
             <div>
                content
-               <input name='content' value={content} onChange={(e) => setContent(e.target.value)} />
+               <input value={content.value} type={content.type} onChange={content.onChange} />
             </div>
             <div>
                author
-               <input name='author' value={author} onChange={(e) => setAuthor(e.target.value)} />
+               <input value={author.value} type={author.type} onChange={author.onChange} />
             </div>
             <div>
                url
-               <input name='info' value={info} onChange={(e) => setInfo(e.target.value)} />
+               <input value={info.value} type={info.type} onChange={info.onChange} />
             </div>
-            <button>create</button>
+            <button>Create</button>
+            <button onClick={handleReset}>Reset</button>
          </form>
       </div>
    )
@@ -163,7 +174,7 @@ const App = () => {
       <div>
          <h1>Software anecdotes</h1>
          <Menu />
-         <div className={ notification !== null ? `notifications` : null }>{notification}</div>
+         <div className={notification !== null ? `notifications` : null}>{notification}</div>
          <Routes>
             <Route path='/anecdotes/:id' element={<Anecdote anecdote={anecdote} />} />
             <Route path='/' element={<AnecdoteList anecdotes={anecdotes} />} />
